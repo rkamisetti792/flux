@@ -266,7 +266,7 @@ func moveTagAndPush(ctx context.Context, workingDir, tag, upstream string, tagAc
 	return nil
 }
 
-// Verify tag and return the verified revision
+// Verify tag signature and return the revision it points to
 func verifyTag(ctx context.Context, workingDir, tag string) (string, error) {
 	out := &bytes.Buffer{}
 	args := []string{"verify-tag", "--format", "%(object)", tag}
@@ -274,6 +274,15 @@ func verifyTag(ctx context.Context, workingDir, tag string) (string, error) {
 		return "", errors.Wrap(err, "verifying tag "+tag)
 	}
 	return strings.TrimSpace(out.String()), nil
+}
+
+// Verify commit signature
+func verifyCommit(ctx context.Context, workingDir, commit string) error {
+	args := []string{"verify-commit", commit}
+	if err := execGitCmd(ctx, args, gitCmdConfig{dir: workingDir}); err != nil {
+		return fmt.Errorf("failed to verify commit %s", commit)
+	}
+	return nil
 }
 
 func changed(ctx context.Context, workingDir, ref string, subPaths []string) ([]string, error) {
